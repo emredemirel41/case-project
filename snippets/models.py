@@ -26,4 +26,4 @@ class DeviceLog(models.Model):
         super(DeviceLog, self).save(*args, **kwargs)
         
     def __str__(self):
-        return self.value
+        return str(self.value)
