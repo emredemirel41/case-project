@@ -6,6 +6,24 @@ from django.contrib.auth.models import User
 from snippets.serializers import UserSerializer
 from snippets.permissions import IsOwnerUser,IsOwnerDevice
 from rest_framework.permissions import IsAuthenticated
+from django.http import Http404
+
+
+class DeviceMacList(generics.ListCreateAPIView):
+    def get_queryset(self):
+        try:
+            owner_id = Device.objects.get(mac=self.kwargs['mac'] , owner=self.request.user)
+            return  DeviceLog.objects.filter(owner=owner_id)
+        except Device.DoesNotExist:
+            raise Http404
+        
+    queryset = get_queryset
+    serializer_class = DeviceLogSerializer
+    permission_classes = [IsAuthenticated ]
+
+
+
+
 
 class DeviceLogList(generics.ListCreateAPIView):
 
@@ -14,29 +32,22 @@ class DeviceLogList(generics.ListCreateAPIView):
         user_ids = Device.objects.filter(owner=user)
         deviceslogs = DeviceLog.objects.filter(owner__in=user_ids)
         return deviceslogs
+        
     queryset = get_queryset
     serializer_class = DeviceLogSerializer
     permission_classes = [IsAuthenticated ]
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
-
+        try:
+            device_id = Device.objects.get(mac=self.request.data["mac"] , owner=self.request.user)
+            serializer.save(owner=device_id)
+        except Device.DoesNotExist:
+            raise Http404
 
 class DeviceLogDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = DeviceLog.objects.all()
     serializer_class = DeviceLogSerializer
     permission_classes = [IsAuthenticated & IsOwnerDevice]
     
-
-    # http GET http://192.168.1.28:8000/devices/ 'Authorization: Token cedfddbbf59e019c07fe5c53e24073881f9234ae'
-    # http GET http://192.168.1.28:8000/devicelogs/ 'Authorization: Token 852501d5336397bfe0be496236bd016b6f402436'
-
-    # http --form POST http://192.168.1.28:8000/devices/ mac="emre.test.device3" 'Authorization: Token 852501d5336397bfe0be496236bd016b6f402436'
-    # http --form POST http://192.168.1.28:8000/devicelogs/ value="11"  'Authorization: Token 852501d5336397bfe0be496236bd016b6f402436'
-
-    """
-        >>> qs = Device.objects.filter(owner="1").values_list()
-        >>> print(qs.query)
-    """
 
 class DeviceList(generics.ListCreateAPIView):
     

@@ -9,6 +9,9 @@ urlpatterns = [
     path('devices/', views.DeviceList.as_view()),
     path('devices/<int:pk>/', views.DeviceDetail.as_view()),
 
+
+    path('device/<mac>', views.DeviceMacList.as_view()),
+
     path('users/', views.UserList.as_view()),
     path('users/<int:pk>/', views.UserDetail.as_view()),
 ]
