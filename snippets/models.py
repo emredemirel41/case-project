@@ -17,7 +17,7 @@ class Device(models.Model):
 
 class DeviceLog(models.Model):
     created = models.DateTimeField(auto_now_add=True)
-    value = models.CharField(max_length=100)
+    value = models.IntegerField()
     owner = models.ForeignKey(Device, related_name='devicelogs', on_delete=models.CASCADE)
     class Meta:
         ordering = ['created']
